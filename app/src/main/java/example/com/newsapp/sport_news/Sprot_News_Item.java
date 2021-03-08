@@ -3,8 +3,10 @@ package example.com.newsapp.sport_news;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,8 +40,13 @@ import okhttp3.Response;
 public class Sprot_News_Item extends Fragment {
 
 
-    List<Sport_News> sport_newsList=new ArrayList<>();
+    List<Sport_News> sport_newsList=new ArrayList<>();                                          //所有的19条数据
+    List<Sport_News> resport_data=new ArrayList<>();                                            //要显示的数据
+    int renumber=8;
+    private SwipeRefreshLayout sportSwipRefresh;
+    Sport_RecyclerViewAdapter sport_recyclerViewAdapter;
     RecyclerView recyclerView;
+
 
     @Nullable
     @Override
@@ -61,20 +68,63 @@ public class Sprot_News_Item extends Fragment {
             public void onResponse(Call call, Response response) throws IOException {
             String info=response.body().string();
             JSONwithGson(info);
+                initdata();
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                    Sport_RecyclerViewAdapter sport_recyclerViewAdapter=new Sport_RecyclerViewAdapter(sport_newsList);
+                        sport_recyclerViewAdapter=new Sport_RecyclerViewAdapter(resport_data);
                         LinearLayoutManager layoutManager=new LinearLayoutManager(getContext());
                         recyclerView.setLayoutManager(layoutManager);
                         recyclerView.setAdapter(sport_recyclerViewAdapter);
+
                     }
                 });
             }
+
         });
+
+
+
+        sportSwipRefresh = (SwipeRefreshLayout) view.findViewById(R.id.sport_swip_refresh);
+        sportSwipRefresh.setColorSchemeResources(R.color.colorAccent);
+        sportSwipRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if(renumber!=24){
+                    redata(sport_newsList);
+                    sport_recyclerViewAdapter.notifyDataSetChanged();
+                }else {
+                    Toast.makeText(getContext(),"没有新的新闻了",Toast.LENGTH_SHORT).show();
+                }
+                sportSwipRefresh.setRefreshing(false);
+            }
+        });
+
+
+
 
         return view;
     }
+
+    public void redata(List<Sport_News> newsList){
+        int k=8;
+        if(renumber==16){
+            k=3;
+        }
+
+        for(int i=renumber;i<k+renumber;i++){
+            resport_data.add(0,sport_newsList.get(i));
+        }
+        renumber=renumber+8;
+    }
+
+
+    public void initdata(){
+        for(int i=0;i<8;i++){
+            resport_data.add(sport_newsList.get(i));
+        }
+    }
+
 
     public void JSONwithGson(String data){
         try {

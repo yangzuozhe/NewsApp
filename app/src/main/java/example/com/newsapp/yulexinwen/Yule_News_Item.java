@@ -4,6 +4,7 @@ import android.content.ContextWrapper;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -43,7 +44,13 @@ public class Yule_News_Item extends Fragment{
     private TextView yuleFabutime;
     private ImageView yulePicture;
 
-    List<Yule_News> yule_newsList=new ArrayList<>();
+    List<Yule_News> yule_newsList=new ArrayList<>();                            //所有的新闻数据
+    List<Yule_News> reyule_data=new ArrayList<>();                              //要显示的数据
+    int renumber=8;
+
+    private SwipeRefreshLayout yuleSwipRefresh;
+    yule_RecycleViewAdapter adapter;
+
 
 
 
@@ -71,21 +78,60 @@ public class Yule_News_Item extends Fragment{
             public void onResponse(Call call, Response response) throws IOException {           //联网成功
                 String info=response.body().string();
                 parseJSONWithJSONobject(info);
+                initdata();
                getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         RecyclerView recyclerView=(RecyclerView)view.findViewById(R.id.yule_news_recyclerview);
                         LinearLayoutManager layoutManager=new LinearLayoutManager(getContext());
                         recyclerView.setLayoutManager(layoutManager);
-                        yule_RecycleViewAdapter adapter=new yule_RecycleViewAdapter(yule_newsList);
+                         adapter=new yule_RecycleViewAdapter(reyule_data);
                         recyclerView.setAdapter(adapter);
                     }
                 });
             }
         });
 
+        yuleSwipRefresh = (SwipeRefreshLayout)view.findViewById(R.id.yule_swip_refresh);
+        yuleSwipRefresh.setColorSchemeResources(R.color.colorAccent);
+        yuleSwipRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if(renumber!=24){
+                    redata(yule_newsList);
+                    adapter.notifyDataSetChanged();
+                }else {
+                    Toast.makeText(getContext(),"没有新的新闻了",Toast.LENGTH_SHORT).show();
+                }
+                yuleSwipRefresh.setRefreshing(false);
+            }
+        });
+
+
+
         return view;
     }
+
+    public void redata(List<Yule_News> newsList){
+        int k=8;
+        if(renumber==16){
+            k=3;
+        }
+
+        for(int i=renumber;i<k+renumber;i++){
+            reyule_data.add(0,yule_newsList.get(i));
+        }
+        renumber=renumber+8;
+    }
+
+
+    public void initdata(){
+        for(int i=0;i<8;i++){
+            reyule_data.add(yule_newsList.get(i));
+        }
+    }
+
+
 
     public void parseJSONWithJSONobject(String jsonadata){
         JSONObject jsonObject= null;

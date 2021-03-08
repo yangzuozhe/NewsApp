@@ -24,7 +24,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="发布者"/>
+                />
             <TextView
                 android:id="@+id/fabuzhe"
                 android:layout_width="wrap_content"
@@ -34,7 +34,7 @@
                 android:layout_toLeftOf="@+id/fabutime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="发布日期"/>
+                />
             <TextView
                 android:id="@+id/fabutime"
                 android:layout_width="wrap_content"
